@@ -1,0 +1,122 @@
+package shedule;
+
+import java.util.Scanner;
+
+public class ShortJobFirst {
+
+	private String num; // 进程号
+	private double sub; // 提交时间
+	private double serve; // 要求服务时间
+	private boolean proBool; // 进程是否进入
+	private static int len = 0;
+	static ShortJobFirst[] srr = new ShortJobFirst[0];
+	private static double subTime = 0;
+	private static double minTime;
+	private final static double Time = 0.1;
+
+	/**
+	 * 获得进程数目
+	 * 
+	 * @return
+	 */
+	public static int getProcessNum() {
+		Scanner sc = new Scanner(System.in);
+		int processNum = 0;
+		System.out.println("请输入进程个数：");
+		processNum = sc.nextInt();
+		return processNum;
+	}
+
+	/**
+	 * 获得进程信息
+	 */
+	public static void getProcess() {
+
+		Scanner sc = new Scanner(System.in);
+		int i = 0;
+		int j;
+		int num = getProcessNum();
+		srr = new ShortJobFirst[num];
+		len = num;
+		while (i < num) {
+			j = i;
+			srr[i] = new ShortJobFirst();
+			System.out.println("请输入第" + (j + 1) + "个进程的进程号：");
+			srr[i].num = sc.next();
+			System.out.println("请输入第" + (j + 1) + "个进程的提交时间：");
+			srr[i].sub = sc.nextDouble();
+			System.out.println("请输入第" + (j + 1) + "个进程的要求服务时间：");
+			srr[i].serve = sc.nextDouble();
+			srr[i].proBool = true;
+			i++;
+		}
+
+		getMinJob(srr);
+	}
+
+	/**
+	 * 打印当前以运行结束的进程
+	 * 
+	 * @param arr
+	 * @param a
+	 */
+	public static void showMethod(ShortJobFirst[] arr, int a) {
+
+		System.out.println("当前运行结束的进程的进程号是" + arr[a].num);
+	}
+
+	/**
+	 * 获得最短作业
+	 * 
+	 * @param arr
+	 */
+	public static void getMinJob(ShortJobFirst[] arr) {
+		int index = 0;
+		double MaxSubTime = arr[arr.length - 1].sub;
+		minTime = arr[index].serve;
+		subTime = arr[index].sub;
+		do {
+			if (subTime <= MaxSubTime) {
+
+				for (int i = 1; i < arr.length; i++) {
+					if (minTime == 0) {
+						len--;
+						arr[index].proBool = false;
+						showMethod(arr, index);
+					} else {
+						if (subTime == arr[i].sub && arr[i].proBool == true) {
+
+							if (minTime > arr[i].serve) {
+								arr[index].serve = minTime;
+								index = i;
+								minTime = arr[index].serve;
+
+							}
+						}
+					}
+
+					subTime += Time;
+					minTime -= Time;
+				}
+
+			} else {
+				double time2 = 10000;
+				int demo = 0;
+				for (int i = 0; i < arr.length; i++) {
+					if (arr[i].proBool == true && time2 > arr[i].serve) {
+						time2 = arr[i].serve;
+						demo = i;
+					}
+				}
+				len--;
+				arr[demo].proBool = false;
+				showMethod(arr, demo);
+			}
+		} while (len > 0);
+
+	}
+
+	public static void main(String[] args) {
+		getProcess();
+	}
+}
