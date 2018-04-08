@@ -1,0 +1,173 @@
+public class Page {
+
+	public String pageCount ;	//记录页面号	
+	public int count = 0; 		//记录页面最近未访问次数
+}
+
+
+
+*****************************************************************************************************************************************
+
+import java.util.Scanner;
+
+public class LruMethod {
+
+	private static int areaNum; // 初始状态下空闲块的数目
+	private String pageNum; // 空闲块中存放的页面号
+	private int areaCount; // 空闲块中放置的页面的最近未访问次数
+	private static LruMethod[] lru = new LruMethod[0]; // 空闲块对象
+
+	public static void main(String[] args) {
+		setLru();
+	}
+
+	/**
+	 * 获取初始状态下空闲块数目
+	 * 
+	 * @return
+	 */
+	public static int setLruLength() {
+		System.out.println("请输入空闲块初始状态的数目：");
+		Scanner sc = new Scanner(System.in);
+		int a = sc.nextInt();
+		return a;
+	}
+
+	/**
+	 * 设置空闲块初始状态
+	 */
+	public static void setLru() {
+		areaNum = setLruLength();
+		lru = new LruMethod[areaNum];
+		int i = 0;
+		Scanner sc = new Scanner(System.in);
+		do {
+			lru[i] = new LruMethod();
+			i++;
+		} while (i < areaNum);
+		showLru(lru);
+		askMethod(lru);
+
+	}
+
+	/***
+	 * 显示空闲块信息
+	 */
+
+	public static void showLru(LruMethod[] arr) {
+		System.out.println("***********************");
+		System.out.println("空闲块状态 信息为：");
+		System.out.println("块号" + "\t页面号" + "\tLRU次数" + "\t状态");
+		for (int i = arr.length - 1; i > -1; i--) {
+			if (arr[i].pageNum == null) {
+				System.out.println((i + 1) + "\t" + arr[i].pageNum
+						+ "\t" + arr[i].areaCount + "\t" + "空闲");
+			} else {
+				System.out.println((i + 1) + "\t" + arr[i].pageNum 
+						+ "\t" + arr[i].areaCount + "\t" + "占用");
+			}
+		}
+		System.out.println("************************");
+	}
+
+	/**
+	 * 询问并插入页面
+	 */
+
+	public static void askMethod(LruMethod[] arr) {
+		int p = 0; // 记录页面索引
+		String choice;
+		int index; // 存在空闲块
+		String str;//获得用户下一次输入的页面号
+		int changeIndex; // 页面置换
+		boolean cont = true;
+		Page page[] = new Page[1024];
+		Scanner sc = new Scanner(System.in);
+		do {
+
+			System.out.println("是否插入页面？【Y/N】");
+			choice = sc.next();
+
+			if ("y".equalsIgnoreCase(choice)) {
+
+				System.out.println("请输入您插入的页面号:");
+				str = sc.next();
+				if (check(arr, str)) {
+					System.out.println("页面已经存在于区域中!");
+					for (int i = 0; i < arr.length; i++) {
+						if (!str.equals(arr[i].pageNum) && arr[i].pageNum != null) {
+							arr[i].areaCount++;
+						}
+					}
+				} else {
+					page[p] = new Page();
+					page[p].pageCount = str;
+					index = searchNull(arr); // 查找是否存在空闲区域，如果存在直接插入
+					if (index != arr.length) {
+						arr[index].pageNum = page[p].pageCount;
+						arr[index].areaCount = page[p].count;
+						arr[index].areaCount++;
+					} else { // 如果不存在空闲区域，执行页面置换算法
+						changeIndex = changePage(arr);
+						arr[changeIndex].pageNum = page[p].pageCount;
+						arr[changeIndex].areaCount = page[p].count;
+						arr[changeIndex].areaCount++;
+					}
+
+				}
+
+			} else {
+				System.out.println("退出插入页面！显示空闲块信息");
+				cont = false;
+			}
+			p++;
+			showLru(arr);
+		} while (cont);
+	}
+
+	/**
+	 * 检查页面是否已存在与空闲块区域中
+	 */
+	public static boolean check(LruMethod[] arr, String str) {
+
+		for (int i = 0; i < arr.length; i++) {
+			if (str.equals(arr[i].pageNum)) {
+				arr[i].areaCount = 0;
+				return true;
+			}
+
+		}
+		return false;
+	}
+
+	/**
+	 * 寻找空闲块
+	 */
+	public static int searchNull(LruMethod[] arr) {
+		int id = arr.length;
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i].pageNum == null) {
+				id = i;
+			} else {
+				arr[i].areaCount++;
+			}
+		}
+		return id;
+	}
+
+	/**
+	 * 页面置换算法
+	 */
+
+	public static int changePage(LruMethod[] arr) {
+		int MaxTimes = 0;
+		int flag = 0;
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i].areaCount >= MaxTimes) {
+				MaxTimes = arr[i].areaCount;
+				flag = i;
+			}
+		}
+		return flag;
+	}
+}
