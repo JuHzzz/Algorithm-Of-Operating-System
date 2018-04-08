@@ -1,0 +1,271 @@
+package Fit;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+/**
+ * 基于顺序搜索的动态分区分配算法
+ * 
+ * @author Dell
+ *
+ */
+public class FitMethodTest {
+
+	private String areaNum; // 分区号
+	private int areaStart; // 空闲分区始址
+	private int areaSize; // 空闲分区大小
+	private int states; // 记录分区在数组中的位置
+	private static final int MinSize = 5;
+	private static int flag = 0;// 最佳适应算法用来记录最佳分区的分区索引
+	private static int num = 0; // 分区个数
+	private static int number = 0;// 要释放的分区分区号
+	private static int mark = 0; // 循环首次适应算法中用来标记
+	private static int insertSize = 0;
+	private static ArrayList<Integer> srr = new ArrayList<Integer>();
+	private static ArrayList<Integer> srr2 = new ArrayList<Integer>();
+	static WorkMember[] wkarr = new WorkMember[1024];
+	private static int index = 0;
+	static FitMethodTest[] areaArray = new FitMethodTest[0];
+
+	public static void main(String[] args) {
+		setareaArray();
+		askMethod(areaArray);
+	}
+
+	public static int getareaArrayNum() {
+		Scanner sc = new Scanner(System.in);
+		int ArrayNum = 0;
+		System.out.println("请输入空闲分区个数：");
+		ArrayNum = sc.nextInt();
+		return ArrayNum;
+	}
+
+	public static void setareaArray() {
+		int i = 0;
+		int x;
+		num = getareaArrayNum();
+		areaArray = new FitMethodTest[num];
+		Scanner sc = new Scanner(System.in);
+		while (i < num) {
+			x = i;
+			areaArray[i] = new FitMethodTest();
+			System.out.println("请输入分区号：");
+			areaArray[i].areaNum = sc.next();
+			System.out.println("请输入第" + (x + 1) + "个分区的分区大小：");
+			areaArray[i].areaSize = sc.nextInt();
+			System.out.println("请输入第" + (x + 1) + "个分区的起始位置：");
+			areaArray[i].areaStart = sc.nextInt();
+			areaArray[i].states = i;
+
+			i++;
+		}
+		showareaArray(areaArray);
+	}
+
+	public static void showareaArray(FitMethodTest[] arr) {
+		System.out.println("分区号" + "             " + "分区大小" + "             " + "分区始址");
+		for (int j = 0; j < arr.length; j++) {
+			System.out.println(arr[j].areaNum + "          " + arr[j].areaSize + "          " + arr[j].areaStart);
+		}
+	}
+
+	public static void askMethod(FitMethodTest[] arr) {
+		String ask;
+		String choose;
+		boolean flag = true;
+		do {
+
+			Scanner sc = new Scanner(System.in);
+			System.out.println("请输入您要插入内存的作业大小：");
+			wkarr[index] = new WorkMember();
+			wkarr[index].size = sc.nextInt();
+			srr.add(wkarr[index].size);
+			System.out.println("请选择您要使用的分区分配算法： " + "A.首次适应（FF）  B.循环首次适应（NF） " + " C.最佳适应（BF）  D.最坏适应（WF）");
+			choose = sc.next();
+			if ("a".equalsIgnoreCase(choose)) {
+				// 首次适应
+				methodFF(arr, wkarr[index].size);
+			} else if ("b".equalsIgnoreCase(choose)) {
+				// 循环首次适应
+				methodNF(arr, wkarr[index].size);
+			} else if ("c".equalsIgnoreCase(choose)) {
+				// 最佳适应
+				methodBF(arr, wkarr[index].size);
+			} else if ("d".equalsIgnoreCase(choose)) {
+				// 最坏适应
+				methodWF(arr, wkarr[index].size);
+			} else {
+				System.out.println("输入有误！重输");
+				askMethod(arr);
+			}
+			srr2.add(wkarr[index].station);
+			showareaArray(arr);
+			showWork(srr);
+			showWorkStation(srr2);
+			System.out.println();
+
+			System.out.println("是否继续插入新的作业？ 【Y/N】");
+			ask = sc.next();
+			if ("y".equalsIgnoreCase(ask)) {
+				System.out.println("是否释放某一个内存？【Y/N】");
+				String question = sc.next();
+				if ("y".equalsIgnoreCase(question)) {
+					System.out.println("请输入要释放的作业号：");
+					number = sc.nextInt();
+
+					free(arr, srr, number, srr2);
+					showareaArray(arr);
+				}
+
+				askMethod(arr);
+
+			} else {
+				System.out.println("退出系统！");
+				showareaArray(arr);
+				break;
+			}
+
+		} while (flag);
+
+	}
+
+	/**
+	 * 首次适应
+	 */
+	public static void methodFF(FitMethodTest[] arr, int size) {
+
+		for (int i = 0; i < arr.length;) {
+			if (arr[i].areaSize >= size) {
+				System.out.println("内存分配成功！分配的内存分区号是：" + arr[i].areaNum);
+				arr[i].areaSize -= size;
+				arr[i].areaStart += size;
+				wkarr[index].station = arr[i].states;
+				break;
+			} else {
+				i++;
+				if (i == arr.length) {
+					System.out.println("内存分配失败！没有找到合适的内存分区！");
+					break;
+				}
+			}
+
+		}
+
+	}
+
+	/**
+	 * 循环首次适应
+	 */
+	public static void methodNF(FitMethodTest[] arr, int size) {
+		int times = 0;
+		do {
+			if (arr[mark].areaSize >= size) {
+				System.out.println("内存分配成功！分配的内存分区号是：" + arr[mark].areaNum);
+				arr[mark].areaSize -= size;
+				arr[mark].areaStart += size;
+				wkarr[index].station = arr[mark].states;
+				break;
+			} else {
+				mark++;
+				if (mark == arr.length) {
+					mark = 0;
+				}
+			}
+			times++;// 用来记录比较次数，如果比较一遍还没有找到就分配失败
+			if (times == arr.length) {
+
+				System.out.println("内存分配失败！没有找到合适的内存分区！");
+				break;
+			}
+		} while (mark < arr.length);
+	}
+
+	/**
+	 * 最佳适应
+	 */
+	public static void methodBF(FitMethodTest[] arr, int size) {
+
+		int compareSize = 100000;
+		for (int i = 0; i < arr.length; i++) {
+			if (compareSize > arr[i].areaSize && arr[i].areaSize >= size) {
+				compareSize = arr[i].areaSize;
+				flag = i;
+			} else {
+				if (i == arr.length) {
+					System.out.println("内存分配失败！没有找到合适的内存分区！");
+					break;
+				}
+			}
+		}
+		System.out.println("内存分配成功！分配的内存分区号是：" + arr[flag].areaNum);
+		arr[arr[flag].states].areaSize -= size;
+		arr[arr[flag].states].areaStart += size;
+		wkarr[index].station = arr[flag].states;
+
+	}
+
+	/**
+	 * 最坏适应
+	 */
+	public static void methodWF(FitMethodTest[] arr, int size) {
+		int compareSize = 0;
+		for (int i = 0; i < arr.length; i++) {
+			if (compareSize < arr[i].areaSize && arr[i].areaSize >= size) {
+				compareSize = arr[i].areaSize;
+				flag = i;
+			} else {
+				if (i == arr.length) {
+					System.out.println("内存分配失败！没有找到合适的内存分区！");
+					break;
+				}
+			}
+		}
+		System.out.println("内存分配成功！分配的内存分区号是：" + arr[flag].areaNum);
+		arr[arr[flag].states].areaSize -= size;
+		arr[arr[flag].states].areaStart += size;
+		wkarr[index].station = arr[flag].states;
+
+	}
+
+	/**
+	 * 释放某一个作业
+	 * 
+	 * @param arr
+	 *            //记录空闲分区
+	 * @param brr
+	 *            //记录作业大小
+	 * @param number
+	 *            //记录作业号
+	 */
+	public static void free(FitMethodTest[] arr, ArrayList<Integer> brr, int number, ArrayList<Integer> brr2) {
+
+		arr[brr2.get(number - 1)].areaSize += brr.get(number - 1);
+		arr[brr2.get(number - 1)].areaStart -= brr.get(number - 1);
+		brr.remove(number - 1);
+		brr2.remove(number - 1);
+	}
+
+	/**
+	 * 显示当前驻留内存的作业号
+	 */
+	public static void showWork(ArrayList<Integer> brr) {
+		System.out.println("当前驻留内存的作业大小为：");
+		int x = 0;
+		for (int i = 0; i < brr.size(); i++) {
+			x = i;
+			System.out.println((x + 1) + "号作业大小: " + brr.get(i));
+		}
+	}
+
+	/**
+	 * 显示驻留内存的作业存储空间的空间号
+	 */
+	public static void showWorkStation(ArrayList<Integer> brr) {
+		System.out.println("当前驻留内存的作业存储空间号为：");
+		int x = 0;
+		for (int i = 0; i < brr.size(); i++) {
+			x = i;
+			System.out.println((x + 1) + "号索引位置: " + brr.get(i));
+		}
+	}
+}
