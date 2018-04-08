@@ -38,7 +38,7 @@ public class FitMethodTest {
 		System.out.println("请输入空闲分区个数：");
 		ArrayNum = sc.nextInt();
 		return ArrayNum;
-	}
+	} 
 
 	public static void setareaArray() {
 		int i = 0;
