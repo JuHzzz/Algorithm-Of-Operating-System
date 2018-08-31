@@ -1,0 +1,273 @@
+/**
+ * Copyright(C),,TongHuashun
+ * FileName:SortTest
+ * Author: JuHzzz
+ * Date: 2018/8/30 10:52
+ * Description:
+ * History:
+ * <author>      <time>     <version>     <desc>
+ * JuHzzz    10:52    1.0.0
+ */
+package test;
+
+import java.lang.reflect.Array;
+
+/***
+ *
+ * @author JuHzzz
+ * @create 2018/8/30
+ * @since 1.0.0
+ */
+public class SortTest {
+    private static int arr[] = {9, 5, 0, 7, 4, 6, 3, 1, 2, 8};
+
+    public static void main(String[] args) {
+        SortTest sortTest = new SortTest();
+        System.out.println("原数组：");
+        sortTest.iterator(arr);
+        System.out.println();
+//        System.out.println("冒泡排序后数组：");
+//        bubbleSort(arr);
+//        sortTest.iterator(arr);
+
+//        System.out.println("快速排序后数组：");
+//        quickSort(arr, 0, arr.length - 1);
+//        sortTest.iterator(arr);
+
+//        System.out.println("直接插入排序后数组：");
+//        insertSort(arr);
+//        sortTest.iterator(arr);
+
+//        System.out.println("希尔排序后数组：");
+//        shellSort(arr);
+//        sortTest.iterator(arr);
+
+//        System.out.println("简单选择排序后数组：");
+//        selectSort(arr);
+//        sortTest.iterator(arr);
+
+        System.out.println("堆排序后数组：");
+        heapSort(arr);
+        sortTest.iterator(arr);
+
+    }
+
+    //交换元素位置
+    public static void changeState(int arr[], int a, int b) {
+        int temp;
+        temp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = temp;
+    }
+
+    //遍历数组
+    public static void iterator(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + " ");
+        }
+    }
+
+    /**
+     * 一、交换排序
+     */
+    //1.冒泡排序（稳定 空间复杂度O（1） 平均时间复杂度O（n²））
+
+    /**
+     * 个人理解：
+     * 冒泡排序是一种需要通过两层循环实现的一种交换排序，从数据的第一个元素开始，每次都和除了该元素之外的其他元素进行比较，
+     * 比如存在这样一组数据 1,3,2,2,5 外层循环从第一个元素开始，内存循环从除了当前元素的下一个元素开始，拿到第一个数据之后，就和它
+     * 的下一个元素进行比较，发现 1 < 3,那么就会改变当前重泡的值，在下一次比较时候，就会把3当做参考来比较，那么接下来发现3 > 2,
+     * 这时就需要交换 3 和 2 的位置，实际上是把两个数据所在位置的值做出了交换，这时继续向下比较；
+     * 使用场景：
+     * 1.数组基本有序（和要排序的顺序一致）时，基本不需要变换位置，就会很快，时间复杂度最快是 O（n），常用与数据量较小的情况下
+     */
+    public static void bubbleSort(int[] arr) {
+        int length = arr.length;
+        for (int i = 0; i < length; i++) {
+            for (int j = 0; j < length - i - 1; j++) {
+                if (arr[j] < arr[j + 1]) {
+                    changeState(arr, j, j + 1);
+                }
+
+            }
+        }
+    }
+
+    //2.快速排序(不稳定 空间复杂度O(nlog2n) 平均时间复杂度O(nlog2n))
+
+    /**
+     * 个人理解：
+     * 快速排序需要注意几个元素，一个是用来做当前标志（参考）的标识位，然后还有数据的首尾两个元素；
+     * 快速排序用到了分治+递归的思想，在第一次排序后，我们将会得到一组有特点的数据，这组数据中标识位左边的元素都会比标识位小，而标识位右边的元素都
+     * 会比标识位大，那么下次需要做的就是一标识位为分界线，将这组数据一分为二，标识位所在位置-1即为左边部分数据的尾部，标识位所在位置+1即为
+     * 右边部分数据的首部，通过分治的思想，接下来需要做的就是对两端的数据分别进行快速排序，这样我们每次进行完一次快排，都会得到这样一组被标识位
+     * 分割开的数据，当数据被分成最小粒度，两个一组的时候，就会得到整组的有序；
+     * 使用场景：
+     * 适用于数据量较大且基本无序时，但需要注意快速排序是一种不稳定的排序算法，平均时间复杂度为O(nlog2n)
+     */
+    //①.取中值
+    public static int dealMid(int arr[], int left, int right) {
+        int midIndex = (left + right) / 2;
+        if (arr[left] > arr[midIndex]) {
+            changeState(arr, left, midIndex);
+        }
+
+        if (arr[left] > arr[right]) {
+            changeState(arr, left, right);
+        }
+
+        if (arr[midIndex] > arr[right]) {
+            changeState(arr, midIndex, right);
+        }
+
+        return midIndex;
+    }
+
+    //②.排序
+    public static void quickSort(int arr[], int left, int right) {
+        int start = left;
+        int end = right;
+        if (start < end) {
+            int flagIndex = dealMid(arr, start, end);
+            while (start < end) {
+                while (start < flagIndex) {
+                    if (arr[start] > arr[flagIndex]) {
+                        changeState(arr, start, flagIndex);
+                        flagIndex = start;
+                    }
+                    start++;
+                }
+
+                while (end > flagIndex) {
+                    if (arr[end] < arr[flagIndex]) {
+                        changeState(arr, flagIndex, end);
+                        flagIndex = end;
+                    }
+                    end--;
+                }
+
+            }
+            quickSort(arr, left, flagIndex - 1);
+            quickSort(arr, flagIndex + 1, right);
+
+        }
+    }
+
+
+    /**
+     * 二、插入排序
+     */
+    //1.直接插入排序 (稳定 空间复杂度O(1) 平均时间复杂度O(n²)))
+
+    /**
+     * 个人理解：
+     * 直接插入排序比较容易理解，我们可以通过一种抽象的方式来划分这组数据，这组数据实际上是有两个区域的，一个无序区，一个有序区，而数据的第一个元素
+     * 默认是在有序区中的，除此之外的其他元素都在无序区中，我们需要做的就是从无序区获取到数据后，依次和有序区中的元素进行比较，当我们找到一个元素，
+     * 这个元素的前一个位置的值比我当前的数据小（或者大）的时候，就会完成排序；
+     * 使用场景：
+     * 适用于基本有序并且数据量较小的情况，如果数据量很多的话，就需要做多次值得变换；比如有序区是0~n，而需要插入的元素是-n~0，就会有很大的事件复杂度
+     * 最大为O(n²)
+     */
+    public static void insertSort(int arr[]) {
+        int temp;
+        for (int i = 1; i < arr.length; i++) {
+            for (int j = i - 1; j > -1; j--) {
+                if (arr[j] > arr[j + 1]) {
+                    temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    //2.希尔排序 (不稳定 空间复杂度O(1) 平均时间复杂度O(n^1.5))
+
+    /**
+     * 个人理解：
+     * 希尔排序是对直接插入排序的优化，也叫做缩小增量排序（分组插入排序），我们事先可以设置一个增量，最大是长度的一半，并且这个增量是递减的，
+     * 每次比较某一个元素和这个元素所在位置相差一个增量位置的元素，进行交换，但需要注意的是，增量的设置会影响程序的性能；
+     * 使用场景：
+     * 适用于数据规模较小且在数组结构中的数据
+     */
+    public static void shellSort(int arr[]) {
+        int increment = arr.length / 2;
+        while (increment > 0) {
+            int i = 0;
+            while ((i + increment) < arr.length) {
+                if (arr[i] > arr[i + increment]) {
+                    changeState(arr, i, i + increment);
+                }
+                i++;
+            }
+            increment--;
+        }
+    }
+
+    /**
+     * 三、选择排序
+     */
+    //1.简单选择排序 （不稳定 空间复杂度O(1) 平均时间复杂度O(n²)）
+    /**
+     * 个人理解：
+     * 简单选择排序应当和直接插入排序并行理解，同样可以把数据分成无序区和有序区，每次从这组数据中找出来最大或者最小的数据放入有序区中，递归的方式
+     * 找出来最后一个元素放入即可；
+     * 使用场景：
+     * 适用于数据规模较小的情况下
+     * */
+    public static void selectSort(int arr[]) {
+        int maxVal;
+        int maxIndex;
+        for (int i = 0; i < arr.length; i++) {
+            maxVal = arr[i];
+            maxIndex = i;
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[j] > maxVal) {
+                    maxVal = arr[j];
+                    maxIndex = j;
+                }
+            }
+            changeState(arr, maxIndex, i);
+        }
+    }
+
+
+    //2.堆排序（不稳定 空间复杂度O(1) 平均时间复杂度O(nlog2n)）
+    /**
+     * 个人理解：
+     * 堆排序可以说是对简单选择排序的优化，是在空间上的优化，堆分为大根堆和小根堆，通过使用树的数据结构，每次从数据中找到最大或者最小的数据，放到堆顶，
+     * 而程序外部就可以从堆顶获得当前这个最大或者最小的数据，接着放到有序区中，然后从剩下的数据中再次获得次大或者次小的数据；并且每次都需要调整堆的
+     * 结构，使得对于堆中的每一个非叶子节点，都满足根节点的值>子节点的值
+     * 而且在堆排序中，当存在某一个非叶子节点，其子节点也存在子节点，当调整完堆结构，在非叶子节点发现满足结构规范，就无需再继续往下比较；
+     * 使用场景：
+     * 适用于数据量比较大的情况，比如一千万条数据中找出来前100小的
+     * */
+    public static void heapSort(int arr[]) {
+        for (int k = arr.length - 1; k >= 0; k--) {
+            createHeap(arr, k);
+            //将每次的堆顶拿出放在数组尾部
+            changeState(arr, 0, k);
+        }
+
+    }
+    //创建并调整堆的结构
+    public static void createHeap(int arr[], int k) {
+        for (int i = k / 2 - 1; i >= 0; i--) {
+            int temp = arr[i];
+            for (int j = 2 * i + 1; j < k; j = 2 * j + 1) {
+                if (j < k - 1 && arr[j] < arr[j + 1]) {
+                    j++;
+                }
+                if (arr[j] > temp) {
+                    arr[i] = arr[j];
+                    i = j;
+                } else {
+                    break;
+                }
+            }
+            arr[i] = temp;
+        }
+    }
+
+    
+}
